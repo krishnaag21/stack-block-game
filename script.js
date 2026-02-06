@@ -589,6 +589,9 @@ function animate() {
 let lastTouchTime = 0;
 
 function handleInput(e) {
+    // Let link clicks (Privacy, Terms) pass through normally
+    if (e.target.closest && e.target.closest('a')) return;
+
     // Prevent browser zoom/scroll on touch
     if (e.type === 'touchstart') {
         e.preventDefault();
