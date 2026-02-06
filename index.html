@@ -1,0 +1,49 @@
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WMJBRHEEYD"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-WMJBRHEEYD');
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Stack Block Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- HUD Layer (always visible during gameplay) -->
+        <div class="ui-layer">
+            <div id="score">0</div>
+            <div id="highScore">BEST: 0</div>
+            <div id="comboDisplay"></div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Menu Overlay -->
+        <div id="menu" class="active">
+            <h1 id="menuTitle">Stack</h1>
+            <p id="menuSubtitle">Tap or press Space to place blocks</p>
+            <div id="menuScore"></div>
+            <button id="actionBtn">PLAY</button>
+            <div class="footer-links">
+                <a href="privacy.html">Privacy Policy</a>
+                <span>|</span>
+                <a href="terms.html">Terms</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
