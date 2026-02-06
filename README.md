@@ -9,7 +9,7 @@ This project demonstrates core game development concepts such as animation loops
 ## Live Demo
 
 Play the game here:  
-https://krishnaag21.github.io/stack-block-game/
+https://mangalcodes.github.io/stack-block-game/
 
 ---
 
