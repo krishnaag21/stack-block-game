@@ -18,22 +18,32 @@ gtag('config', 'G-WMJBRHEEYD');
 <body>
 
     <div class="game-container">
-        <!-- HUD Layer (always visible during gameplay) -->
         <div class="ui-layer">
             <div id="score">0</div>
             <div id="highScore">BEST: 0</div>
             <div id="comboDisplay"></div>
         </div>
 
-        <!-- Game Canvas -->
         <canvas id="gameCanvas"></canvas>
 
-        <!-- Menu Overlay -->
         <div id="menu" class="active">
             <h1 id="menuTitle">Stack</h1>
-            <p id="menuSubtitle">Tap or press Space to place blocks</p>
+            <p id="menuSubtitle">Tap or Space to Place</p>
+            
             <div id="menuScore"></div>
+
+            <div class="difficulty-container">
+                <label>DIFFICULTY</label>
+                <input type="range" id="diffRange" min="0" max="2" step="1" value="1">
+                <div class="diff-labels">
+                    <span id="label-easy">EASY</span>
+                    <span id="label-medium" class="active">MEDIUM</span>
+                    <span id="label-hard">HARD</span>
+                </div>
+            </div>
+
             <button id="actionBtn">PLAY</button>
+            
             <div class="footer-links">
                 <a href="privacy.html">Privacy Policy</a>
                 <span>|</span>
@@ -45,5 +55,4 @@ gtag('config', 'G-WMJBRHEEYD');
     <script src="script.js"></script>
 
 </body>
-
 </html>
