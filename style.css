@@ -1,5 +1,5 @@
 /* ============================================
-   STACK BLOCK GAME — Modern CSS
+   STACK BLOCK GAME — Final CSS
    ============================================ */
 
 * {
@@ -22,7 +22,6 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* ---------- Game Container ---------- */
 .game-container {
     position: relative;
     width: 100%;
@@ -33,12 +32,19 @@ body {
     overflow: hidden;
 }
 
-/* ---------- Canvas ---------- */
+/* ---------- Canvas with Dynamic Theme ---------- */
 canvas {
     display: block;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+    
+    /* CSS Variables for Dynamic Backgrounds */
+    --bg-top: #1a1a2e;
+    --bg-mid: #16213e;
+    --bg-bot: #0f3460;
+    
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 40%, var(--bg-bot) 100%);
+    transition: background 1.5s ease; /* Smooth transition when leveling up */
     touch-action: none;
 }
 
@@ -149,6 +155,122 @@ canvas {
     min-height: 24px;
 }
 
+/* ---------- Difficulty Slider (Image Style) ---------- */
+.difficulty-container {
+    width: 85%;
+    max-width: 320px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.difficulty-container label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* --- The Slider Track (Green -> Yellow -> Red) --- */
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+    cursor: pointer;
+    margin-bottom: 15px;
+    height: 12px; /* Taller track */
+}
+
+input[type=range]:focus { outline: none; }
+
+/* Chrome/Safari Track */
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    /* The Magic Gradient */
+    background: linear-gradient(90deg, #4cd964 0%, #ffcc00 50%, #ff3b30 100%);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: none;
+}
+
+/* Firefox Track */
+input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(90deg, #4cd964 0%, #ffcc00 50%, #ff3b30 100%);
+    border-radius: 10px;
+    border: none;
+}
+
+/* --- The Thumb (White Glowing Circle) --- */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 28px;
+    width: 28px;
+    border-radius: 50%;
+    background: #ffffff;
+    margin-top: -10px; /* Center on track (height 28 - track 8) / 2 */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(0,0,0,0.2);
+    transition: transform 0.1s ease, box-shadow 0.2s;
+}
+
+input[type=range]::-moz-range-thumb {
+    height: 28px;
+    width: 28px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: none;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    transition: transform 0.1s ease;
+}
+
+input[type=range]:active::-webkit-slider-thumb {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 1);
+}
+
+/* --- Labels Underneath --- */
+.diff-labels {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+}
+
+.diff-labels span {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.2);
+    font-weight: 800;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+/* Active States for Labels (Specific Colors) */
+.diff-labels span.active-easy {
+    color: #4cd964; /* Green */
+    text-shadow: 0 0 12px rgba(76, 217, 100, 0.6);
+    transform: scale(1.1);
+}
+
+.diff-labels span.active-medium {
+    color: #ffcc00; /* Yellow */
+    text-shadow: 0 0 12px rgba(255, 204, 0, 0.6);
+    transform: scale(1.1);
+}
+
+.diff-labels span.active-hard {
+    color: #ff3b30; /* Red */
+    text-shadow: 0 0 12px rgba(255, 59, 48, 0.6);
+    transform: scale(1.1);
+}
+
+/* ---------- Button ---------- */
 button {
     background: linear-gradient(135deg, #ffffff 0%, #e8e8e8 100%);
     color: #1a1a2e;
@@ -174,7 +296,7 @@ button:active {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
-/* ---------- Footer Links (Privacy / Terms) ---------- */
+/* ---------- Footer ---------- */
 .footer-links {
     position: absolute;
     bottom: 20px;
@@ -184,19 +306,16 @@ button:active {
     font-size: 12px;
     letter-spacing: 0.5px;
 }
-
 .footer-links a {
     color: rgba(255, 255, 255, 0.4);
     text-decoration: none;
     transition: color 0.2s;
     pointer-events: auto;
 }
-
 .footer-links a:hover {
     color: rgba(255, 255, 255, 0.75);
     text-decoration: underline;
 }
-
 .footer-links span {
     color: rgba(255, 255, 255, 0.25);
     margin: 0 6px;
