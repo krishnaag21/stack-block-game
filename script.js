@@ -1,5 +1,5 @@
 // ============================================
-//  STACK BLOCK GAME — Final Updated Logic
+//  STACK BLOCK GAME — Final Logic Engine
 // ============================================
 
 // ---------- DOM Elements ----------
@@ -13,6 +13,7 @@ const menuTitle    = document.getElementById('menuTitle');
 const menuSubtitle = document.getElementById('menuSubtitle');
 const menuScoreEl  = document.getElementById('menuScore');
 const actionBtn    = document.getElementById('actionBtn');
+const fsBtn        = document.getElementById('fullscreenBtn');
 
 // Difficulty UI
 const diffSlider   = document.getElementById('diffRange');
@@ -81,122 +82,75 @@ let nextPowerUpTarget = 0;
 highScoreEl.textContent = `BEST: ${highScore}`;
 
 // ============================================
-//  SOUND MANAGER
-// ============================================
-// ============================================
-//  SOUND MANAGER (Upgraded: ASMR / Musical)
+//  SOUND MANAGER (Synthesized)
 // ============================================
 class SoundManager {
     constructor() {
         this.ctx = null;
         this.masterGain = null;
         this.enabled = true;
-        // Pentatonic Scale (C Major) for musical combos
+        // Pentatonic Scale (C Major)
         this.scale = [
-            261.63, 293.66, 329.63, 392.00, 440.00, // C4 - A4
-            523.25, 587.33, 659.25, 783.99, 880.00, // C5 - A5
-            1046.50, 1174.66, 1318.51, 1567.98, 1760.00 // C6 - A6
+            261.63, 293.66, 329.63, 392.00, 440.00, 
+            523.25, 587.33, 659.25, 783.99, 880.00,
+            1046.50, 1174.66, 1318.51, 1567.98, 1760.00
         ];
     }
-
     init() {
         if (this.ctx) return;
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             this.ctx = new AudioContext();
-            
-            // Master Volume (prevents clipping when many sounds play)
             this.masterGain = this.ctx.createGain();
             this.masterGain.gain.value = 0.4;
             this.masterGain.connect(this.ctx.destination);
-        } catch (e) {
-            console.warn('AudioContext not supported');
-            this.enabled = false;
-        }
+        } catch (e) { this.enabled = false; }
     }
-
-    /**
-     * Synthesizer Helper
-     * @param {number} freq - Frequency in Hz
-     * @param {string} type - 'sine', 'triangle', 'square', 'sawtooth'
-     * @param {number} duration - Sound length in seconds
-     * @param {number} vol - Volume (0.0 to 1.0)
-     * @param {number} delay - Start delay
-     */
     _playTone(freq, type, duration, vol = 1, delay = 0) {
         if (!this.enabled || !this.ctx) return;
-        
         const t = this.ctx.currentTime + delay;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = type;
         osc.frequency.setValueAtTime(freq, t);
-
-        // Envelope (ADSR) - Smooth Attack and Release
         gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(vol, t + 0.02); // Attack (20ms)
-        gain.gain.exponentialRampToValueAtTime(0.01, t + duration); // Release
-
+        gain.gain.linearRampToValueAtTime(vol, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + duration);
         osc.connect(gain);
         gain.connect(this.masterGain);
-
         osc.start(t);
         osc.stop(t + duration + 0.1);
     }
-
-    // --- SOUND EFFECTS ---
-
-    // 1. Normal Drop: A satisfying, woody "Thock"
-    place() {
+    place() { // "Thock" sound
         if (!this.enabled || !this.ctx) return;
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
-        // Pitch drop (Simulates a drum/block hit)
         osc.frequency.setValueAtTime(150, t);
         osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
-
         gain.gain.setValueAtTime(0.5, t);
         gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-
         osc.connect(gain);
         gain.connect(this.masterGain);
         osc.start(t);
         osc.stop(t + 0.15);
     }
-
-    // 2. Perfect Drop: A crystal bell chime
-    perfect() {
-        // Fundamental tone
-        this._playTone(523.25, 'sine', 0.8, 0.4, 0); // C5
-        // Harmonic overtone (adds sparkle)
-        this._playTone(1046.50, 'sine', 1.2, 0.15, 0.05); // C6
+    perfect() { 
+        this._playTone(523.25, 'sine', 0.8, 0.4, 0); 
+        this._playTone(1046.50, 'sine', 1.2, 0.15, 0.05);
     }
-
-    // 3. Combo: Musical scale climbing up
     combo(count) {
-        // Pick note from scale based on combo count
-        // Loops back if combo gets too high, but shifts octave
         const index = (count - 1) % this.scale.length;
-        const note = this.scale[index];
-
-        // Play the note (longer sustain for higher combos)
-        this._playTone(note, 'sine', 0.6, 0.3, 0);
-        
-        // Add a fifth harmony for high combos
+        this._playTone(this.scale[index], 'sine', 0.6, 0.3, 0);
         if (count >= 5) {
-             const harmonyIndex = (index + 4) % this.scale.length;
-             this._playTone(this.scale[harmonyIndex], 'sine', 0.6, 0.1, 0.05);
+             const hIndex = (index + 4) % this.scale.length;
+             this._playTone(this.scale[hIndex], 'sine', 0.6, 0.1, 0.05);
         }
     }
-
-    // 4. Game Over: A sad, descending wash
     gameOver() {
         this._playTone(300, 'triangle', 0.5, 0.3, 0);
         this._playTone(250, 'triangle', 0.5, 0.3, 0.15);
-        this._playTone(200, 'triangle', 0.8, 0.3, 0.30); // Long sustain on last note
+        this._playTone(200, 'triangle', 0.8, 0.3, 0.30);
     }
 }
 const sound = new SoundManager();
@@ -222,31 +176,26 @@ class Block {
 
         // --- GOLDEN BLOCK VISUALS ---
         if (this.isPowerUp) {
-            // Metallic Gradient
             const grad = ctx.createLinearGradient(this.x, dy, this.x, dy + this.height);
             grad.addColorStop(0, '#fff8db');   // Light Gold
             grad.addColorStop(0.3, '#ffd700'); // Pure Gold
             grad.addColorStop(1, '#b8860b');   // Dark Gold Shadow
             ctx.fillStyle = grad;
 
-            // Glow Effect
             ctx.save();
             ctx.shadowColor = '#ffd700';
             ctx.shadowBlur = 20;
             ctx.fillRect(this.x, dy, this.width, this.height);
             ctx.restore();
 
-            // Border
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2;
             ctx.strokeRect(this.x, dy, this.width, this.height);
 
-            // Glass Sheen (Top Half)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
             ctx.fillRect(this.x, dy, this.width, this.height / 2);
 
-            // Random Sparkle
-            if (Math.random() < 0.1) {
+            if (Math.random() < 0.1) { // Sparkle
                 ctx.fillStyle = '#fff';
                 ctx.fillRect(this.x + Math.random() * this.width, dy + Math.random() * this.height, 3, 3);
             }
@@ -363,24 +312,20 @@ function spawnNextBlock() {
     hue = (hue + 22) % 360;
     const prev = blocks[blocks.length - 1];
     const newY = prev.y - CONFIG.blockHeight;
-
     const fromLeft = Math.random() > 0.5;
     const startX = fromLeft ? -prev.width : canvas.width;
 
     // --- GOLDEN BLOCK LOGIC (Every 5-10 blocks) ---
     blocksSinceLastPowerUp++;
-    
     if (blocksSinceLastPowerUp >= nextPowerUpTarget) {
         powerUpActive = true;
         blocksSinceLastPowerUp = 0;
-        // Set NEW random target for next time (5 to 10)
         nextPowerUpTarget = Math.floor(Math.random() * 6) + 5;
     } else {
         powerUpActive = false;
     }
 
     let color = powerUpActive ? '#FFD700' : `hsl(${hue}, 68%, 55%)`;
-
     currentBlock = new Block(startX, newY, prev.width, color);
     currentBlock.vx = Math.min(currentSpeed, CONFIG.maxSpeed);
     currentBlock.dir = fromLeft ? 1 : -1;
@@ -397,11 +342,9 @@ function initGame() {
     cameraY = 0; targetCameraY = 0; shakeAmount = 0;
     hue = 200;
 
-    // Reset PowerUp Logic
     blocksSinceLastPowerUp = 0;
     nextPowerUpTarget = Math.floor(Math.random() * 6) + 5;
 
-    // Apply Difficulty
     const diff = DIFFICULTY_SETTINGS[currentDifficulty];
     currentSpeed = diff.speed;
     changeEnvironment(0);
@@ -411,7 +354,6 @@ function initGame() {
     menu.classList.remove('active');
     gameRunning = true;
 
-    // Base Block
     const w = canvas.width * diff.width;
     const x = (canvas.width - w) / 2;
     const y = canvas.height - CONFIG.blockHeight * 3;
@@ -436,7 +378,6 @@ function placeBlock() {
 
     // --- SUCCESS ---
     if (overhang < CONFIG.perfectThreshold) {
-        // Perfect
         curr.x = prev.x;
         curr.width = prev.width;
         comboCount++;
@@ -444,7 +385,6 @@ function placeBlock() {
         
         sound.perfect();
         spawnText(cx, curr.y - 10, 'PERFECT!', '#fff');
-        
         for(let i=0; i<20; i++) particles.push(new Particle(curr.x + Math.random()*curr.width, curr.y, '#fff'));
 
         // Growth Mechanic (Every 3 Perfects)
@@ -454,9 +394,7 @@ function placeBlock() {
             spawnText(cx, curr.y - 40, 'GROWTH!', '#00ff00');
             sound.combo(5);
         }
-
     } else {
-        // Imperfect
         comboCount = 0;
         if (dist > 0) { 
             curr.width = overlap; 
@@ -477,10 +415,10 @@ function placeBlock() {
     if (curr.isPowerUp) {
         currentSpeed *= 0.8; 
         spawnText(cx, curr.y - 60, 'SLOW DOWN!', '#FFD700');
-        curr.color = '#FFD700'; // Keep it gold
+        curr.color = '#FFD700';
     }
 
-    // --- PROGRESSION (Every 10) ---
+    // --- PROGRESSION ---
     if (score > 0 && score % 10 === 0) {
         changeEnvironment(score / 10);
         currentSpeed = Math.min(currentSpeed * 1.3, CONFIG.maxSpeed);
@@ -489,7 +427,6 @@ function placeBlock() {
         currentSpeed += CONFIG.speedIncrement;
     }
 
-    // Update UI
     curr.vx = 0;
     blocks.push(curr);
     scoreEl.textContent = score;
@@ -501,9 +438,7 @@ function placeBlock() {
         comboEl.classList.remove('visible');
     }
 
-    // Camera
     targetCameraY = Math.min(0, curr.y - canvas.height * CONFIG.cameraTarget);
-
     spawnNextBlock();
 }
 
@@ -536,14 +471,13 @@ function spawnText(x, y, text, color) {
 }
 
 // ============================================
-//  ANIMATION LOOP
+//  ANIMATION & INPUTS
 // ============================================
 function animate() {
     const hasEffects = debris.length || particles.length || floatingTexts.length;
     if (!gameRunning && !hasEffects) { animFrameId = null; return; }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     if (Math.abs(targetCameraY - cameraY) > 0.5) cameraY += (targetCameraY - cameraY) * CONFIG.cameraLerp;
 
     ctx.save();
@@ -560,8 +494,7 @@ function animate() {
 
     [debris, particles, floatingTexts].forEach(arr => {
         for (let i = arr.length - 1; i >= 0; i--) {
-            arr[i].update();
-            arr[i].draw();
+            arr[i].update(); arr[i].draw();
             if (!arr[i].alive) arr.splice(i, 1);
         }
     });
@@ -570,11 +503,8 @@ function animate() {
     animFrameId = requestAnimationFrame(animate);
 }
 
-// ============================================
-//  INPUTS & DIFFICULTY SLIDER
-// ============================================
 function handleInput(e) {
-    if (e.target.closest && (e.target.closest('a') || e.target.closest('.difficulty-container'))) return;
+    if (e.target.closest && (e.target.closest('a') || e.target.closest('.difficulty-container') || e.target.id === 'fullscreenBtn')) return;
     if (e.type === 'touchstart') e.preventDefault();
     
     if (menu.classList.contains('active')) {
@@ -584,31 +514,38 @@ function handleInput(e) {
     }
 }
 
-// --- Slider Logic ---
+// --- Difficulty Slider ---
 const diffMap = ['easy', 'medium', 'hard'];
-
 function updateDifficultyUI(val) {
-    // Reset classes
     diffLabels.forEach(l => l.className = '');
-    // Add specific class for CSS color targeting
-    if (val === 0) diffLabels[0].classList.add('active', 'active-easy');
-    if (val === 1) diffLabels[1].classList.add('active', 'active-medium');
-    if (val === 2) diffLabels[2].classList.add('active', 'active-hard');
+    if (val === 0) diffLabels[0].classList.add('active');
+    if (val === 1) diffLabels[1].classList.add('active');
+    if (val === 2) diffLabels[2].classList.add('active');
 }
-
 diffSlider.addEventListener('input', (e) => {
     const val = parseInt(e.target.value);
     currentDifficulty = diffMap[val];
     updateDifficultyUI(val);
 });
-
 diffLabels.forEach((l, i) => l.addEventListener('click', () => {
     diffSlider.value = i;
     diffSlider.dispatchEvent(new Event('input'));
 }));
+updateDifficultyUI(1);
 
-// Initialize visuals on load
-updateDifficultyUI(1); // Default to Medium
+// --- Full Screen ---
+fsBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        fsBtn.textContent = '✖';
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        fsBtn.textContent = '⛶';
+    }
+});
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) fsBtn.textContent = '⛶';
+});
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') { e.preventDefault(); if (!e.repeat) handleInput(e); }
