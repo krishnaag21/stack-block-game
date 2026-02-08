@@ -37,14 +37,12 @@ canvas {
     display: block;
     width: 100%;
     height: 100%;
-    
     /* CSS Variables for Dynamic Backgrounds */
     --bg-top: #1a1a2e;
     --bg-mid: #16213e;
     --bg-bot: #0f3460;
-    
     background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 40%, var(--bg-bot) 100%);
-    transition: background 1.5s ease; /* Smooth transition when leveling up */
+    transition: background 1.5s ease;
     touch-action: none;
 }
 
@@ -93,6 +91,31 @@ canvas {
 #comboDisplay.visible {
     opacity: 1;
     transform: scale(1);
+}
+
+/* Full Screen Button */
+#fullscreenBtn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    pointer-events: auto;
+}
+#fullscreenBtn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: scale(1.1);
 }
 
 /* ---------- Menu Overlay ---------- */
@@ -155,7 +178,7 @@ canvas {
     min-height: 24px;
 }
 
-/* ---------- Difficulty Slider (Image Style) ---------- */
+/* ---------- Difficulty Slider (Gradient Style) ---------- */
 .difficulty-container {
     width: 85%;
     max-width: 320px;
@@ -174,29 +197,26 @@ canvas {
     text-transform: uppercase;
 }
 
-/* --- The Slider Track (Green -> Yellow -> Red) --- */
+/* Track */
 input[type=range] {
     -webkit-appearance: none;
     width: 100%;
     background: transparent;
     cursor: pointer;
     margin-bottom: 15px;
-    height: 12px; /* Taller track */
+    height: 12px;
 }
-
 input[type=range]:focus { outline: none; }
 
 /* Chrome/Safari Track */
 input[type=range]::-webkit-slider-runnable-track {
     width: 100%;
     height: 8px;
-    /* The Magic Gradient */
     background: linear-gradient(90deg, #4cd964 0%, #ffcc00 50%, #ff3b30 100%);
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     border: none;
 }
-
 /* Firefox Track */
 input[type=range]::-moz-range-track {
     width: 100%;
@@ -206,18 +226,17 @@ input[type=range]::-moz-range-track {
     border: none;
 }
 
-/* --- The Thumb (White Glowing Circle) --- */
+/* Thumb (Glowing White Circle) */
 input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
     height: 28px;
     width: 28px;
     border-radius: 50%;
     background: #ffffff;
-    margin-top: -10px; /* Center on track (height 28 - track 8) / 2 */
+    margin-top: -10px; 
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(0,0,0,0.2);
     transition: transform 0.1s ease, box-shadow 0.2s;
 }
-
 input[type=range]::-moz-range-thumb {
     height: 28px;
     width: 28px;
@@ -227,20 +246,18 @@ input[type=range]::-moz-range-thumb {
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
     transition: transform 0.1s ease;
 }
-
 input[type=range]:active::-webkit-slider-thumb {
     transform: scale(1.1);
     box-shadow: 0 0 25px rgba(255, 255, 255, 1);
 }
 
-/* --- Labels Underneath --- */
+/* Labels */
 .diff-labels {
     width: 100%;
     display: flex;
     justify-content: space-between;
     padding: 0 2px;
 }
-
 .diff-labels span {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.2);
@@ -251,27 +268,13 @@ input[type=range]:active::-webkit-slider-thumb {
     text-transform: uppercase;
 }
 
-/* Active States for Labels (Specific Colors) */
-.diff-labels span.active-easy {
-    color: #4cd964; /* Green */
-    text-shadow: 0 0 12px rgba(76, 217, 100, 0.6);
-    transform: scale(1.1);
-}
-
-.diff-labels span.active-medium {
-    color: #ffcc00; /* Yellow */
-    text-shadow: 0 0 12px rgba(255, 204, 0, 0.6);
-    transform: scale(1.1);
-}
-
-.diff-labels span.active-hard {
-    color: #ff3b30; /* Red */
-    text-shadow: 0 0 12px rgba(255, 59, 48, 0.6);
-    transform: scale(1.1);
-}
+/* Active Color States */
+#label-easy.active { color: #4cd964; text-shadow: 0 0 12px rgba(76, 217, 100, 0.6); transform: scale(1.1); }
+#label-medium.active { color: #ffcc00; text-shadow: 0 0 12px rgba(255, 204, 0, 0.6); transform: scale(1.1); }
+#label-hard.active { color: #ff3b30; text-shadow: 0 0 12px rgba(255, 59, 48, 0.6); transform: scale(1.1); }
 
 /* ---------- Button ---------- */
-button {
+button#actionBtn {
     background: linear-gradient(135deg, #ffffff 0%, #e8e8e8 100%);
     color: #1a1a2e;
     border: none;
@@ -285,16 +288,8 @@ button {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-}
-
-button:active {
-    transform: scale(0.95) translateY(0);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-}
+button#actionBtn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); }
+button#actionBtn:active { transform: scale(0.95) translateY(0); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); }
 
 /* ---------- Footer ---------- */
 .footer-links {
@@ -306,17 +301,6 @@ button:active {
     font-size: 12px;
     letter-spacing: 0.5px;
 }
-.footer-links a {
-    color: rgba(255, 255, 255, 0.4);
-    text-decoration: none;
-    transition: color 0.2s;
-    pointer-events: auto;
-}
-.footer-links a:hover {
-    color: rgba(255, 255, 255, 0.75);
-    text-decoration: underline;
-}
-.footer-links span {
-    color: rgba(255, 255, 255, 0.25);
-    margin: 0 6px;
-}
+.footer-links a { color: rgba(255, 255, 255, 0.4); text-decoration: none; transition: color 0.2s; pointer-events: auto; }
+.footer-links a:hover { color: rgba(255, 255, 255, 0.75); text-decoration: underline; }
+.footer-links span { color: rgba(255, 255, 255, 0.25); margin: 0 6px; }
