@@ -83,46 +83,120 @@ highScoreEl.textContent = `BEST: ${highScore}`;
 // ============================================
 //  SOUND MANAGER
 // ============================================
+// ============================================
+//  SOUND MANAGER (Upgraded: ASMR / Musical)
+// ============================================
 class SoundManager {
     constructor() {
         this.ctx = null;
+        this.masterGain = null;
         this.enabled = true;
+        // Pentatonic Scale (C Major) for musical combos
+        this.scale = [
+            261.63, 293.66, 329.63, 392.00, 440.00, // C4 - A4
+            523.25, 587.33, 659.25, 783.99, 880.00, // C5 - A5
+            1046.50, 1174.66, 1318.51, 1567.98, 1760.00 // C6 - A6
+        ];
     }
+
     init() {
         if (this.ctx) return;
         try {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        } catch (_) { this.enabled = false; }
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+            
+            // Master Volume (prevents clipping when many sounds play)
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = 0.4;
+            this.masterGain.connect(this.ctx.destination);
+        } catch (e) {
+            console.warn('AudioContext not supported');
+            this.enabled = false;
+        }
     }
-    _tone(freq, dur, type = 'sine', vol = 0.3) {
+
+    /**
+     * Synthesizer Helper
+     * @param {number} freq - Frequency in Hz
+     * @param {string} type - 'sine', 'triangle', 'square', 'sawtooth'
+     * @param {number} duration - Sound length in seconds
+     * @param {number} vol - Volume (0.0 to 1.0)
+     * @param {number} delay - Start delay
+     */
+    _playTone(freq, type, duration, vol = 1, delay = 0) {
+        if (!this.enabled || !this.ctx) return;
+        
+        const t = this.ctx.currentTime + delay;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+
+        // Envelope (ADSR) - Smooth Attack and Release
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(vol, t + 0.02); // Attack (20ms)
+        gain.gain.exponentialRampToValueAtTime(0.01, t + duration); // Release
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(t);
+        osc.stop(t + duration + 0.1);
+    }
+
+    // --- SOUND EFFECTS ---
+
+    // 1. Normal Drop: A satisfying, woody "Thock"
+    place() {
         if (!this.enabled || !this.ctx) return;
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        osc.connect(g);
-        g.connect(this.ctx.destination);
-        osc.type = type;
-        osc.frequency.value = freq;
-        g.gain.setValueAtTime(vol, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        const gain = this.ctx.createGain();
+
+        // Pitch drop (Simulates a drum/block hit)
+        osc.frequency.setValueAtTime(150, t);
+        osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+
+        gain.gain.setValueAtTime(0.5, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
         osc.start(t);
-        osc.stop(t + dur);
+        osc.stop(t + 0.15);
     }
-    place()   { this._tone(220, 0.12, 'square', 0.1); this._tone(440, 0.08, 'sine', 0.1); }
-    perfect() { 
-        this._tone(523, 0.12, 'sine', 0.2); 
-        setTimeout(() => this._tone(659, 0.12, 'sine', 0.2), 70);
-        setTimeout(() => this._tone(784, 0.18, 'sine', 0.18), 140);
+
+    // 2. Perfect Drop: A crystal bell chime
+    perfect() {
+        // Fundamental tone
+        this._playTone(523.25, 'sine', 0.8, 0.4, 0); // C5
+        // Harmonic overtone (adds sparkle)
+        this._playTone(1046.50, 'sine', 1.2, 0.15, 0.05); // C6
     }
-    combo(n)  {
-        const f = 523 + n * 40;
-        this._tone(f, 0.1, 'sine', 0.15);
-        setTimeout(() => this._tone(f * 1.25, 0.1, 'sine', 0.12), 60);
+
+    // 3. Combo: Musical scale climbing up
+    combo(count) {
+        // Pick note from scale based on combo count
+        // Loops back if combo gets too high, but shifts octave
+        const index = (count - 1) % this.scale.length;
+        const note = this.scale[index];
+
+        // Play the note (longer sustain for higher combos)
+        this._playTone(note, 'sine', 0.6, 0.3, 0);
+        
+        // Add a fifth harmony for high combos
+        if (count >= 5) {
+             const harmonyIndex = (index + 4) % this.scale.length;
+             this._playTone(this.scale[harmonyIndex], 'sine', 0.6, 0.1, 0.05);
+        }
     }
-    gameOver(){ 
-        this._tone(400, 0.18, 'sawtooth', 0.18);
-        setTimeout(() => this._tone(300, 0.18, 'sawtooth', 0.16), 140);
-        setTimeout(() => this._tone(200, 0.35, 'sawtooth', 0.12), 280);
+
+    // 4. Game Over: A sad, descending wash
+    gameOver() {
+        this._playTone(300, 'triangle', 0.5, 0.3, 0);
+        this._playTone(250, 'triangle', 0.5, 0.3, 0.15);
+        this._playTone(200, 'triangle', 0.8, 0.3, 0.30); // Long sustain on last note
     }
 }
 const sound = new SoundManager();
